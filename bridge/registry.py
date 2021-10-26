@@ -2,6 +2,7 @@ import inspect
 
 
 exposed_functions = {}
+expose_interface = []
 
 
 def read_signature(scope, func_name, func):
@@ -24,7 +25,12 @@ def read_signature(scope, func_name, func):
 def register_function(func):
     expose_name, signature = read_signature(func.__module__, func.__name__, func)
     print(expose_name, signature)
+    expose_interface.append((expose_name, signature[1:]))
     exposed_functions[expose_name] = func
+
+
+def get_all_exposed_interfaces():
+    return expose_interface
 
 
 Client_class = None

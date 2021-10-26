@@ -2,6 +2,15 @@ from fastapi import WebSocket, WebSocketDisconnect
 from typing import List
 from functools import partial
 import asyncio
+import os
+
+file_path = os.path.dirname(os.path.abspath(__file__))
+
+
+def get_js_prototype():
+    with open(os.path.join(file_path, 'proto.js')) as js_file:
+        content = js_file.read()
+    return content
 
 
 class ConnectionManager:

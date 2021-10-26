@@ -20,6 +20,11 @@ def stop_listener():
     pass
 
 
+def get_js_prototype():
+    if use_websocket:
+        return websocket.get_js_prototype()
+
+
 def server_out_call(client_id, function_call, kwargs):
     if use_websocket:
         websocket.send_data(client_id, function_call, kwargs)

@@ -8,18 +8,19 @@ app = FastAPI()
 
 bridge.initialize(use_websocket_transport=True, params=app)
 
-# pyjs = bridge.compile()
+pyjs = bridge.build_javascript()
 
 
-# @app.get("/py.js")
-# async def get_pyjs():
-#     return Response(content=pyjs, media_type="text/javascript")
+@app.get("/py.js")
+async def get_pyjs():
+    return Response(content=pyjs, media_type="text/javascript")
 
 html = """
 <!DOCTYPE html>
 <html>
     <head>
         <title>Chat</title>
+         <script src="py.js"></script>
     </head>
     <body>
         <h1>WebSocket Chat</h1>
@@ -30,19 +31,16 @@ html = """
         <ul id='messages'>
         </ul>
         <script>
-            var ws = new WebSocket("ws://localhost:8000/ws");
-            ws.onmessage = function(event) {
-                var messages = document.getElementById('messages')
-                var message = document.createElement('li')
-                var content = JSON.parse(event.data);
-                message.appendChild(document.createTextNode(content["d"]["p0"]));
+            var messages = document.getElementById('messages');
+            server.register_callbacks("f0", function(p0){
+                var message = document.createElement('li');
+                message.appendChild(document.createTextNode(p0));
                 messages.appendChild(message)
-            };
+            });
             function sendMessage(event) {
-                var input = document.getElementById("messageText")
-                ws.send(JSON.stringify({"f": "backend.foo", "d":{"p0":input.value } } ));
-                input.value = ''
                 event.preventDefault()
+                var input = document.getElementById("messageText");
+                server.backend.foo(input.value);
             }
         </script>
     </body>
