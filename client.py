@@ -10,7 +10,13 @@ class Client:
         pass
 
 
-c = Client()
+ab = Client("ab")
 
-c.f0(1)
-c.f1(1)
+ab.f0(1)
+ab.f1(1)
+
+
+cd = Client("cd")
+
+cd.f0(1)
+cd.f1(1)

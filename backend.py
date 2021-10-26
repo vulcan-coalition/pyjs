@@ -12,4 +12,3 @@ def foo(client, p0: int, p1: str = "a", p2=None):
 
 
 abc(1, 2)
-bar(10, "2")
