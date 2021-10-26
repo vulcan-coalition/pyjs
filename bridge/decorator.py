@@ -1,60 +1,49 @@
-from functools import update_wrapper, partial
+from functools import update_wrapper, partialmethod
 import inspect
-from .pillar import *
-
-
-def read_signature(scope, func_name, func):
-    fullargspec = inspect.getfullargspec(func)
-    formatted_args = []
-
-    defaults = [] if fullargspec.defaults is None else list(fullargspec.defaults)
-    hints = {} if fullargspec.annotations is None else fullargspec.annotations
-
-    for i in range(len(fullargspec.args) - len(defaults)):
-        arg = fullargspec.args[i]
-        formatted_args.append((arg, None if arg not in hints else hints[arg], None))
-    for j, d in enumerate(defaults):
-        arg = fullargspec.args[i + j + 1]
-        formatted_args.append((arg, None if arg not in hints else hints[arg], d))
-
-    return scope + "." + func_name, formatted_args
+from .registry import *
+from .pillar import server_out_call
 
 
 class Expose:
     def __init__(self, func):
-        functools.update_wrapper(self, func)
-        expose_name, signature = read_signature(func.__module__, func.__name__, func)
-        print(expose_name, signature)
-        self.func = func
+        update_wrapper(self, func)
+        register_function(func)
 
     def __call__(self, *args, **kwargs):
-        return self.func(*args, **kwargs)
+        raise AssertionError("This is an exposed function, which cannot be called directly from backend.")
 
 
+def client_object_init(self, transport):
+    self.transport = transport
 
-def client_object_init(self, id):
-    self.id = id
+
+def blend_args(signature, args, kwargs):
+    for i, (arg, t, default) in enumerate(signature):
+        if i < len(args):
+            kwargs[arg] = args[i]
+        else:
+            if default is not None and arg not in kwargs:
+                kwargs[arg] = default
+    return kwargs
+
 
 def send_message(self, *args, **kwargs):
-    print(self.id, args)
+    function_call, signature = args[0]
+    server_out_call(self.transport, function_call, blend_args(signature, args[1:], kwargs))
 
 
-client_class = None
 class Client_interface:
     def __init__(self, the_class):
         update_wrapper(self, the_class)
         functions = inspect.getmembers(the_class, predicate=inspect.isfunction)
-
         class_content = {
             "__init__": client_object_init
         }
         for n, f in functions:
-            class_content[n] = send_message
-
+            _, signature = read_signature("", "", f)
+            class_content[n] = partialmethod(send_message, (n, signature[1:]))
         new_class = type("Client_object", (object, ), class_content)
+        register_client(new_class)
 
-        self.new_class = new_class
-
-    def __call__(self, client_id):
-        obj = self.new_class(client_id)
-        return obj
+    def __call__(self, transport):
+        raise AssertionError("This is a class interface, which cannot be called directly from backend.")

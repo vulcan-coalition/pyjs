@@ -8,15 +8,3 @@ class Client:
 
     def f1(self, p0: int, p1: str = "a", p2=None):
         pass
-
-
-ab = Client("ab")
-
-ab.f0(1)
-ab.f1(1)
-
-
-cd = Client("cd")
-
-cd.f0(1)
-cd.f1(1)
