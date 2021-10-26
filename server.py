@@ -2,18 +2,18 @@ from fastapi import FastAPI, Depends, HTTPException, Form, Request, Body, Respon
 from fastapi.responses import RedirectResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 import backend
-import bridge
+import pyjs
 
 app = FastAPI()
 
-bridge.initialize(use_websocket_transport=True, params=app)
+pyjs.initialize(use_websocket_transport=True, params=app)
 
-pyjs = bridge.build_javascript()
+py_js = pyjs.build_javascript()
 
 
 @app.get("/py.js")
 async def get_pyjs():
-    return Response(content=pyjs, media_type="text/javascript")
+    return Response(content=py_js, media_type="text/javascript")
 
 html = """
 <!DOCTYPE html>
@@ -55,17 +55,15 @@ async def get_index():
     # return response
     return HTMLResponse(html)
 
-app.mount("/", StaticFiles(directory="frontend"), name="frontend")
-
 
 @app.on_event("startup")
 async def startup_event():
-    bridge.start_listener()
+    pyjs.start_listener()
 
 
 @app.on_event("shutdown")
 def shutdown_event():
-    bridge.stop_listener()
+    pyjs.stop_listener()
 
 
 if __name__ == "__main__":

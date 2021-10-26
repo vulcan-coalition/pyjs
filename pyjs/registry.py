@@ -25,7 +25,7 @@ def read_signature(scope, func_name, func):
 def register_function(func):
     expose_name, signature = read_signature(func.__module__, func.__name__, func)
     print(expose_name, signature)
-    expose_interface.append((expose_name, signature[1:]))
+    expose_interface.append((expose_name, signature[1:], func.__doc__))
     exposed_functions[expose_name] = func
 
 
@@ -34,15 +34,21 @@ def get_all_exposed_interfaces():
 
 
 Client_class = None
+client_class_info = None
 
 
-def register_client(client_class):
-    global Client_class
+def register_client(client_class, class_info):
+    global Client_class, client_class_info
     Client_class = client_class
+    client_class_info = class_info
 
 
 def get_active_client_class():
     return Client_class
+
+
+def get_active_client_info():
+    return client_class_info
 
 
 def client_in_call(client, function_name, args, kwargs):

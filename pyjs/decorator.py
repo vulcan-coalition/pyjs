@@ -39,11 +39,13 @@ class Client_interface:
         class_content = {
             "__init__": client_object_init
         }
+        class_info = []
         for n, f in functions:
             _, signature = read_signature("", "", f)
             class_content[n] = partialmethod(send_message, (n, signature[1:]))
+            class_info.append((n, signature[1:], f.__doc__))
         new_class = type("Client_object", (object, ), class_content)
-        register_client(new_class)
+        register_client(new_class, class_info)
 
     def __call__(self, transport):
         raise AssertionError("This is a class interface, which cannot be called directly from backend.")

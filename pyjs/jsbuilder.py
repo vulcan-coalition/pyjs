@@ -28,10 +28,10 @@ def convert_to_js_structure(proxy):
 
 def build_javascript():
     server_proxy = {}
-    for name, signature in get_all_exposed_interfaces():
+    for name, signature, doc in get_all_exposed_interfaces():
         pd = None
         for optional_index, (p, t, d) in enumerate(signature):
-            if pd is not None and d is None:
+            if pd is None and d is not None:
                 break
             pd = d
 
