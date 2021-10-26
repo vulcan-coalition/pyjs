@@ -16,7 +16,7 @@ setup(
     long_description_content_type="text/markdown",
     url="https://github.com/vulcan-coalition/pyjs.git",
     packages=["pyjs"],
-    package_data={'': ['transport/proto.js']},
+    package_data={'': ['transport/proto.js', 'transport/__init__.py', 'transport/websocket.py']},
     include_package_data=True,
     classifiers=[
         "Programming Language :: Python :: 3",
