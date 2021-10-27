@@ -1,4 +1,4 @@
-from fastapi import WebSocket, WebSocketDisconnect
+from fastapi import WebSocket, WebSocketDisconnect, Query
 from typing import List
 from functools import partial
 import asyncio
@@ -33,15 +33,19 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
-def init(app, get_active_client_class, on_receive_msg):
+def init(app, get_active_client_class, on_receive_msg, token_verifier=None):
     @app.websocket("/ws")
-    async def websocket_endpoint(websocket: WebSocket):
+    async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
+        if token_verifier is not None and not token_verifier(token):
+            return
         await manager.connect(websocket)
         # transport is the socket.
         client_obj = get_active_client_class()(websocket)
         try:
             while True:
                 package = await websocket.receive_json()
+                if "f" not in package:
+                    raise WebSocketDisconnect()
                 on_receive_msg(client_obj, package["f"], [], package["d"])
         except WebSocketDisconnect:
             manager.disconnect(websocket)
@@ -52,5 +56,4 @@ def send_data(websocket, function_call, kwargs):
         "f": function_call,
         "d": kwargs
     }
-
     asyncio.ensure_future(partial(websocket.send_json, package)())

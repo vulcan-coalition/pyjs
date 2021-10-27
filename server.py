@@ -6,7 +6,12 @@ import pyjs
 
 app = FastAPI()
 
-pyjs.initialize(use_websocket_transport=True, params=app)
+
+def verify_token(token: str):
+    return True
+
+
+pyjs.initialize(use_websocket_transport=True, params={"app": app, "token_verifier": verify_token})
 
 py_js = pyjs.build_javascript()
 
@@ -20,7 +25,7 @@ html = """
 <html>
     <head>
         <title>Chat</title>
-         <script src="py.js"></script>
+        <script src="py.js"></script>
     </head>
     <body>
         <h1>WebSocket Chat</h1>
@@ -37,6 +42,7 @@ html = """
                 message.appendChild(document.createTextNode(p0));
                 messages.appendChild(message)
             });
+            server.initialize_connection("some_token_string");
             function sendMessage(event) {
                 event.preventDefault()
                 var input = document.getElementById("messageText");

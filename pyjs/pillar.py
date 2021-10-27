@@ -9,7 +9,7 @@ def initialize(use_websocket_transport=True, params=None):
     global use_websocket
     use_websocket = use_websocket_transport
     if use_websocket:
-        websocket.init(params, get_active_client_class, client_in_call)
+        websocket.init(params["app"], get_active_client_class, client_in_call, params["token_verifier"])
 
 
 def start_listener():
