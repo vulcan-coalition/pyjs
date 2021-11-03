@@ -8,7 +8,8 @@ app = FastAPI()
 
 
 def verify_token(token: str):
-    return True
+    # return None if verify fails.
+    return "True"
 
 
 pyjs.initialize(use_websocket_transport=True, params={"app": app, "token_verifier": verify_token})
