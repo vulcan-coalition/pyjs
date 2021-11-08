@@ -38,7 +38,7 @@ html = """
         </ul>
         <script>
             var messages = document.getElementById('messages');
-            server.register_callbacks("f0", function(p0){
+            server.register_callbacks("incoming_message", function(p0){
                 var message = document.createElement('li');
                 message.appendChild(document.createTextNode(p0));
                 messages.appendChild(message)
@@ -47,7 +47,7 @@ html = """
             function sendMessage(event) {
                 event.preventDefault()
                 var input = document.getElementById("messageText");
-                server.backend.foo(input.value);
+                server.backend.broadcast(input.value);
             }
         </script>
     </body>

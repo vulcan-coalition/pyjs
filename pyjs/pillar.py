@@ -25,8 +25,11 @@ def get_js_prototype():
         return websocket.get_js_prototype()
 
 
-def server_out_call(client_id, function_call, kwargs):
-    if use_websocket:
-        websocket.send_data(client_id, function_call, kwargs)
+def server_out_call(client, function_call, kwargs):
+    if client.expired:
+        return False
+    if client.transport_type == websocket.TRANSPORT_TYPE:
+        websocket.send_data(client.transport, function_call, kwargs)
     else:
-        print("mock out call...", client_id, function_call, kwargs)
+        print("mock out call...", function_call, kwargs)
+    return True

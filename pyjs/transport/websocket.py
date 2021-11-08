@@ -5,6 +5,7 @@ import asyncio
 import os
 
 file_path = os.path.dirname(os.path.abspath(__file__))
+TRANSPORT_TYPE = "ws"
 
 
 def get_js_prototype():
@@ -40,7 +41,7 @@ def init(app, get_active_client_class, on_receive_msg, token_verifier=None):
             return
         await manager.connect(websocket)
         # transport is the socket.
-        client_obj = get_active_client_class()(websocket)
+        client_obj = get_active_client_class()(websocket, TRANSPORT_TYPE)
         try:
             while True:
                 package = await websocket.receive_json()
@@ -49,6 +50,7 @@ def init(app, get_active_client_class, on_receive_msg, token_verifier=None):
                 on_receive_msg(client_obj, package["f"], [], package["d"])
         except WebSocketDisconnect:
             manager.disconnect(websocket)
+            client_obj.expired = True
 
 
 def send_data(websocket, function_call, kwargs):

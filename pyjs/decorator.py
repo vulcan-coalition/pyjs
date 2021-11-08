@@ -2,6 +2,7 @@ from functools import update_wrapper, partialmethod
 import inspect
 from .registry import *
 from .pillar import server_out_call
+import uuid
 
 
 class Expose:
@@ -13,8 +14,19 @@ class Expose:
         raise AssertionError("This is an exposed function, which cannot be called directly from backend.")
 
 
-def client_object_init(self, transport):
+def client_object_init(self, transport, transport_type):
+    self.client_id = uuid.uuid4()
     self.transport = transport
+    self.transport_type = transport_type
+    self.expired = False
+
+
+def client_object_hash(self):
+    return hash(self.client_id)
+
+
+def client_object_eq(self, another):
+    return self.client_id == another.client_id
 
 
 def blend_args(signature, args, kwargs):
@@ -29,7 +41,7 @@ def blend_args(signature, args, kwargs):
 
 def send_message(self, *args, **kwargs):
     function_call, signature = args[0]
-    server_out_call(self.transport, function_call, blend_args(signature, args[1:], kwargs))
+    return server_out_call(self, function_call, blend_args(signature, args[1:], kwargs))
 
 
 class Client_interface:
@@ -37,7 +49,9 @@ class Client_interface:
         update_wrapper(self, the_class)
         functions = inspect.getmembers(the_class, predicate=inspect.isfunction)
         class_content = {
-            "__init__": client_object_init
+            "__init__": client_object_init,
+            "__hash__": client_object_hash,
+            "__eq__": client_object_eq
         }
         class_info = []
         for n, f in functions:
