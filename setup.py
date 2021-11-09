@@ -29,6 +29,7 @@ setup(
         'python-jose[cryptography]',
         'python-multipart',
         'jsmin',
-        'uvicorn'
+        'uvicorn',
+        'websockets'
     ]
 )
