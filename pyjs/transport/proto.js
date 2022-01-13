@@ -61,8 +61,12 @@ window.server = (function() {
         };
     }
 
+    function available() {
+        return ws != null && ws.readyState === WebSocket.OPEN;
+    }
+
     function send(f, d) {
-        if(ws == null) throw 'trouble connecting to the server';
+        if(!available()) throw 'trouble connecting to the server';
         ws.send(JSON.stringify({ "f": f, "d": d }));
     }
 
@@ -70,6 +74,7 @@ window.server = (function() {
         "initialize_connection": function(token) {
             connect(token);
         },
+        "available": available,
         "register_callbacks": function(name, callback) {
             if (server_callback[name] == null) server_callback[name] = [];
             server_callback[name].push(new Callback_parser(callback));
