@@ -57,4 +57,4 @@ def client_in_call(client, function_name, args, kwargs):
 
 def mock_incoming(*args, **kwargs):
     function_name = args[0]
-    exposed_functions[function_name](Client_class(None, "mock"), *args[1:], **kwargs)
+    exposed_functions[function_name](Client_class(None, "mock", "token"), *args[1:], **kwargs)

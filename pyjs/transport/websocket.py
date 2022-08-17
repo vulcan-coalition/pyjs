@@ -37,11 +37,13 @@ manager = ConnectionManager()
 def init(app, get_active_client_class, on_receive_msg, token_verifier=None):
     @app.websocket("/ws")
     async def websocket_endpoint(websocket: WebSocket, token: str = Query(...)):
-        if token_verifier is not None and not token_verifier(token):
-            return
+        if token_verifier is not None:
+            token_data = token_verifier(token)
+            if token_data is None:
+                return
         await manager.connect(websocket)
         # transport is the socket.
-        client_obj = get_active_client_class()(websocket, TRANSPORT_TYPE)
+        client_obj = get_active_client_class()(websocket, TRANSPORT_TYPE, token_data)
         try:
             while True:
                 package = await websocket.receive_json()

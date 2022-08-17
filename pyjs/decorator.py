@@ -14,10 +14,11 @@ class Expose:
         raise AssertionError("This is an exposed function, which cannot be called directly from backend.")
 
 
-def client_object_init(self, transport, transport_type):
+def client_object_init(self, transport, transport_type, token_data):
     self.client_id = uuid.uuid4()
     self.transport = transport
     self.transport_type = transport_type
+    self.token_data = token_data
     self.expired = False
 
 

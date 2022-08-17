@@ -20,6 +20,7 @@ def find_optional_index(args):
 def arg_pretty_print(arg, t, d, optional=False):
     return "**" + arg + "** : " + (t.__name__ if t is not None else "any") + ("" if not optional else " = " + ("undefined" if d is None else json.dumps(d)))
 
+
 def generate_md_api_doc():
 
     md_text = ""

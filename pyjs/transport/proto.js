@@ -4,8 +4,8 @@ window.server = (function() {
     const ARGUMENT_NAMES = /([^\s,]+)/g;
 
     function getParamNames(func) {
-        var fnStr = func.toString().replace(STRIP_COMMENTS, '');
-        var result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
+        const fnStr = func.toString().replace(STRIP_COMMENTS, '');
+        let result = fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARGUMENT_NAMES);
         if (result === null)
             result = [];
         return result;
@@ -17,15 +17,17 @@ window.server = (function() {
             this.callback = callback;
         }
         invoke(data) {
-            var params = [];
+            const params = [];
             for (const n of this.signature) params.push(data[n]);
             this.callback.apply(null, params);
         }
     }
 
-    var server_callback = {};
-    var ws = null;
-    var saved_token = "";
+    const on_error_callbacks = [];
+    const on_close_callbacks = [];
+    const server_callback = {};
+    let ws = null;
+    let saved_token = "";
 
     var url = (window.location.protocol == "https:"? "wss:":"ws:") + "//" + window.location.host + "/ws";
     function connect(token=null) {
@@ -38,9 +40,9 @@ window.server = (function() {
         };
 
         ws.onmessage = function(event) {
-            var content = JSON.parse(event.data);
-            var params = content["d"];
-            var callbacks = server_callback[content["f"]];
+            const content = JSON.parse(event.data);
+            const params = content["d"];
+            const callbacks = server_callback[content["f"]];
             if (callbacks == null) {
                 throw 'callback for server response "' + content["f"] + '" has not been registered.';
             }
@@ -48,16 +50,13 @@ window.server = (function() {
         };
 
         ws.onclose = function(e) {
-            console.log('Socket is closed. Reconnect will be attempted in 1 second.', e.reason);
-            setTimeout(function() {
-                connect();
-            }, 1000);
+            console.log('Socket is closed.', e.reason);
+            for(const on_close of on_close_callbacks) on_close();
         };
 
         ws.onerror = function(err) {
-            console.error('Socket encountered error: ', err.message, 'Closing socket');
-            ws.close();
-            ws = null;
+            console.error('Socket encountered error: ', err.message);
+            for(const on_error of on_error_callbacks) on_error();
         };
     }
 
@@ -66,7 +65,9 @@ window.server = (function() {
     }
 
     function send(f, d) {
-        if(!available()) throw 'trouble connecting to the server';
+        if(!available()) {
+            throw 'trouble connecting to the server';
+        }
         ws.send(JSON.stringify({ "f": f, "d": d }));
     }
 
@@ -75,6 +76,12 @@ window.server = (function() {
             connect(token);
         },
         "available": available,
+        "register_on_close": function(callback) {
+            on_close_callbacks.push(callback);
+        },
+        "register_on_error": function(callback) {
+            on_error_callbacks.push(callback);
+        },
         "register_callbacks": function(name, callback) {
             if (server_callback[name] == null) server_callback[name] = [];
             server_callback[name].push(new Callback_parser(callback));

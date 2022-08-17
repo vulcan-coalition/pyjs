@@ -8,7 +8,7 @@ all_clients = set()
 @pyjs.Expose
 def broadcast(client_obj, message: str, p1: int = 0, p2=None):
     'This is the broadcast function.'
-    print("receiving..", message, p1, p2)
+    print("receiving..", message, p1, p2, " from", client_obj.token_data)
     all_clients.add(client_obj)
     for c in all_clients:
         res = c.incoming_message(str(client_obj.client_id) + " : " + message)
